@@ -17,9 +17,9 @@ export const defaultContent = `# Raphael Publish - 公众号排版大师
 ![](https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&h=400&fit=crop)
 ![](https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop)
 
-### 3. 10 套高定样式
+### 3. 30 套高定样式
 
-告别同质化的白底模板，10 套精心打磨的视觉主题任你切换：
+告别同质化的白底模板，30 套精心打磨的视觉主题任你切换（下方仅展示部分代表风格）：
 
 1. **极简与经典**：Mac 纯净白、微信公众号原生、Medium 博客风
 2. **深度阅读**：Claude 燕麦色、NYT 纽约时报、Retro 复古羊皮纸
@@ -80,7 +80,7 @@ const raphael = {
 | 功能 | 说明 |
 |------|------|
 | 魔法粘贴 | 从飞书/Notion/Word 粘贴，自动转 Markdown |
-| 10 套主题 | Mac、Claude、NYT、Linear 等精选样式 |
+| 30 套主题 | 经典 / 潮流 / 更多风格，全场景主题随时切换 |
 | 图片打包 | 外链图片自动 Base64，微信零报错 |
 | 多图排版 | 2-3 列网格布局，微信中不塌陷 |
 | 代码高亮 | MacOS 风格指示灯 + 多语言语法高亮 |
