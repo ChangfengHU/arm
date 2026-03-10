@@ -39,4 +39,18 @@ describe('applyTheme', () => {
         expect(grid).not.toBeNull();
         expect(grid?.querySelectorAll('img')).toHaveLength(2);
     });
+
+    it('keeps block code on a consistent monospace stack and avoids italic comments', () => {
+        const rawHtml = renderMarkdown('```javascript\n// 中文注释\nconst raphael = 1;\n```');
+        const themed = applyTheme(rawHtml, 'apple');
+        const doc = new DOMParser().parseFromString(themed, 'text/html');
+        const pre = doc.querySelector('pre');
+        const code = doc.querySelector('pre code');
+        const comment = doc.querySelector('.hljs-comment');
+
+        expect(pre?.getAttribute('style')).toContain('font-family: "SF Mono", "Cascadia Code", "Fira Code", Consolas, Menlo, Monaco, monospace;');
+        expect(code?.getAttribute('style')).toContain('font-style: normal !important;');
+        expect(code?.getAttribute('style')).toContain('white-space: pre;');
+        expect(comment?.getAttribute('style')).toContain('font-style: normal;');
+    });
 });
