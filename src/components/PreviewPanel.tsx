@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import DeviceFrame from './DeviceFrame';
 
 interface PreviewPanelProps {
@@ -11,6 +11,7 @@ interface PreviewPanelProps {
     onPreviewOuterScroll: () => void;
     onPreviewInnerScroll: () => void;
     scrollSyncEnabled: boolean;
+    onImageClick?: (info: { type: string; index: number; src?: string; alt?: string }) => void;
 }
 
 export default function PreviewPanel({
@@ -22,9 +23,77 @@ export default function PreviewPanel({
     previewInnerScrollRef,
     onPreviewOuterScroll,
     onPreviewInnerScroll,
-    scrollSyncEnabled
+    scrollSyncEnabled,
+    onImageClick
 }: PreviewPanelProps) {
     const isFramedDevice = previewDevice !== 'pc';
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!onImageClick || !containerRef.current) return;
+
+        const handleElementClick = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+
+            // Find the closest element with location data
+            const element = target.closest('[data-md-type]') as HTMLElement;
+            if (!element) return;
+
+            const mdType = element.getAttribute('data-md-type');
+            const mdIndex = element.getAttribute('data-md-index');
+
+            if (!mdType || mdIndex === null) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Prepare click info object
+            const clickInfo: { type: string; index: number; src?: string; alt?: string } = {
+                type: mdType,
+                index: parseInt(mdIndex, 10)
+            };
+
+            // For images, include src and alt
+            if (mdType === 'image' && target.tagName === 'IMG') {
+                const img = target as HTMLImageElement;
+                clickInfo.src = img.src || img.getAttribute('src') || '';
+                clickInfo.alt = img.alt || img.getAttribute('alt') || '';
+            }
+
+            onImageClick(clickInfo);
+        };
+
+        const container = containerRef.current;
+        container.addEventListener('click', handleElementClick);
+
+        // Add visual feedback style for all clickable elements
+        const style = document.createElement('style');
+        style.textContent = `
+            .preview-content [data-md-type] {
+                cursor: pointer;
+                transition: background-color 0.2s ease, outline 0.2s ease;
+            }
+            .preview-content [data-md-type="image"]:hover,
+            .preview-content [data-md-type="paragraph"]:hover {
+                background-color: rgba(0, 102, 204, 0.05);
+                border-radius: 4px;
+            }
+            .preview-content [data-md-type="heading"]:hover {
+                background-color: rgba(0, 102, 204, 0.05);
+                border-radius: 4px;
+            }
+            .preview-content img:hover {
+                outline: 2px solid rgba(0, 102, 204, 0.5);
+                outline-offset: 2px;
+            }
+        `;
+        document.head.appendChild(style);
+
+        return () => {
+            container.removeEventListener('click', handleElementClick);
+            document.head.removeChild(style);
+        };
+    }, [onImageClick]);
 
     return (
         <div
@@ -33,7 +102,10 @@ export default function PreviewPanel({
             onScroll={scrollSyncEnabled && !isFramedDevice ? onPreviewOuterScroll : undefined}
             className="relative overflow-y-auto no-scrollbar bg-[#f2f2f7]/50 dark:bg-[#000000] flex flex-col z-20 flex-1 min-h-0 w-full overflow-x-hidden"
         >
-            <div className={`${deviceWidthClass} transition-all duration-500 ${isFramedDevice ? 'self-center my-12 px-4 lg:px-8' : 'mt-12 mb-32 ml-4 md:ml-6 mr-auto'} h-fit min-h-[calc(100%-48px)] flex items-start justify-center relative`}>
+            <div
+                ref={containerRef}
+                className={`${deviceWidthClass} transition-all duration-500 ${isFramedDevice ? 'self-center my-12 px-4 lg:px-8' : 'mt-12 mb-32 ml-4 md:ml-6 mr-auto'} h-fit min-h-[calc(100%-48px)] flex items-start justify-center relative`}
+            >
                 {isFramedDevice ? (
                     <DeviceFrame
                         device={previewDevice as 'mobile' | 'tablet'}

@@ -1,5 +1,23 @@
 import { THEMES } from './themes';
 
+/**
+ * Remove internal editor attributes from HTML
+ * Used when exporting to avoid including internal implementation details
+ */
+export function cleanInternalAttributes(html: string): string {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // Remove all internal editor attributes
+    const allElements = doc.querySelectorAll('*');
+    allElements.forEach(el => {
+        el.removeAttribute('data-md-type');
+        el.removeAttribute('data-md-index');
+    });
+
+    return doc.body.innerHTML;
+}
+
 // Helper to convert images to Base64
 async function getBase64Image(imgUrl: string): Promise<string> {
     try {
@@ -26,6 +44,14 @@ export async function makeWeChatCompatible(html: string, themeId: string): Promi
 
     const theme = THEMES.find(t => t.id === themeId) || THEMES[0];
     const containerStyle = theme.styles.container || '';
+
+    // 0. Remove internal editor attributes (for click-to-locate feature)
+    // These are only used in the editor and should not appear in the final HTML
+    const allElements = doc.querySelectorAll('*');
+    allElements.forEach(el => {
+        el.removeAttribute('data-md-type');
+        el.removeAttribute('data-md-index');
+    });
 
     // 1. WeChat prefers <section> as the root wrapper for overall styling
     // If the root is a div, let's wrap or convert it to a section.
