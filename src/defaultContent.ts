@@ -1,6 +1,6 @@
-export const defaultContent = `# Raphael Publish - 公众号排版大师
+export const defaultContent = `# 公众号排版大师
 
-> 欢迎使用 Raphael Publish，一款专为**微信公众号**与**内容创作者**设计的现代 Markdown 排版引擎！
+> 一款专为**微信公众号**与**内容创作者**设计的现代 Markdown 排版引擎！
 
 ## 核心功能
 
@@ -56,8 +56,8 @@ export const defaultContent = `# Raphael Publish - 公众号排版大师
 内置 MacOS 风格的代码高亮控制台，支持多种编程语言：
 
 \`\`\`javascript
-// Raphael Publish 排版引擎核心流程
-const raphael = {
+// 公众号排版大师核心流程
+const publisher = {
   // 1. smart paste: 自动清洗富文本
   paste: (richText) => cleanToMarkdown(richText),
 

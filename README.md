@@ -1,10 +1,10 @@
-# Raphael Publish - 公众号排版大师
+# 公众号排版大师
 
 专为**微信公众号**与**内容创作者**打造的现代 Markdown 排版引擎。
 
 > **在线体验**：[https://publish.raphael.app](https://publish.raphael.app)
 
-![Raphael Publish 截图](media/screenshot.png)
+![公众号排版大师截图](media/screenshot.png)
 
 
 ## 功能特性
@@ -27,7 +27,7 @@
 
 <p align="center">
   <a href="media/demo.mp4">
-    <img src="media/record.gif" alt="Raphael Publish 功能演示（点击播放 MP4）" />
+    <img src="media/record.gif" alt="公众号排版大师功能演示（点击播放 MP4）" />
   </a>
 </p>
 <p align="center">

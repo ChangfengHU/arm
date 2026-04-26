@@ -177,7 +177,7 @@ export default function App() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `Raphael_Article_${new Date().getTime()}.html`;
+        a.download = `Article_${new Date().getTime()}.html`;
         a.click();
         URL.revokeObjectURL(url);
     };
@@ -187,7 +187,7 @@ export default function App() {
         const element = previewRef.current;
         const opt = {
             margin: 10,
-            filename: `Raphael_Article_${new Date().getTime()}.pdf`,
+            filename: `Article_${new Date().getTime()}.pdf`,
             image: { type: 'jpeg' as const, quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true, letterRendering: true, backgroundColor: document.documentElement.classList.contains('dark') ? '#000000' : '#ffffff' },
             jsPDF: { unit: 'mm' as const, format: 'a4', orientation: 'portrait' as const }
@@ -278,20 +278,20 @@ export default function App() {
                         {!sidebarCollapsed && <span className="text-sm font-medium">素材解析</span>}
                     </button>
                     <button
-                        onClick={() => setActiveMenu('typesetter')}
-                        className={`w-full h-10 rounded-xl px-3 flex items-center gap-2 transition-colors ${activeMenu === 'typesetter' ? 'bg-[#0066cc]/10 text-[#0066cc] dark:bg-[#0a84ff]/15 dark:text-[#0a84ff]' : 'text-[#4a4a4a] dark:text-[#a1a1a6] hover:bg-[#00000008] dark:hover:bg-[#ffffff10]'}`}
-                        title="排版大师"
-                    >
-                        <WandSparkles size={16} />
-                        {!sidebarCollapsed && <span className="text-sm font-medium">排版大师</span>}
-                    </button>
-                    <button
                         onClick={() => setActiveMenu('ai-creation')}
                         className={`w-full h-10 rounded-xl px-3 flex items-center gap-2 transition-colors ${activeMenu === 'ai-creation' ? 'bg-[#0066cc]/10 text-[#0066cc] dark:bg-[#0a84ff]/15 dark:text-[#0a84ff]' : 'text-[#4a4a4a] dark:text-[#a1a1a6] hover:bg-[#00000008] dark:hover:bg-[#ffffff10]'}`}
                         title="AI创作"
                     >
                         <Sparkles size={16} />
                         {!sidebarCollapsed && <span className="text-sm font-medium">AI创作</span>}
+                    </button>
+                    <button
+                        onClick={() => setActiveMenu('typesetter')}
+                        className={`w-full h-10 rounded-xl px-3 flex items-center gap-2 transition-colors ${activeMenu === 'typesetter' ? 'bg-[#0066cc]/10 text-[#0066cc] dark:bg-[#0a84ff]/15 dark:text-[#0a84ff]' : 'text-[#4a4a4a] dark:text-[#a1a1a6] hover:bg-[#00000008] dark:hover:bg-[#ffffff10]'}`}
+                        title="排版大师"
+                    >
+                        <WandSparkles size={16} />
+                        {!sidebarCollapsed && <span className="text-sm font-medium">排版大师</span>}
                     </button>
                 </nav>
             </aside>
