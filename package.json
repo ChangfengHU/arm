@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "api": "node server/index.js",
     "build": "tsc -b && vite build",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -19,6 +20,7 @@
     "html2pdf.js": "^0.14.0",
     "lucide-react": "^0.460.0",
     "markdown-it": "^14.1.0",
+    "playwright": "^1.59.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "turndown": "^7.2.2",

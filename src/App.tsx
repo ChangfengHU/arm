@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { PenLine, Eye } from 'lucide-react';
+import { PenLine, Eye, ChevronLeft, ChevronRight, FileSearch, WandSparkles, Sparkles } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 import { md, preprocessMarkdown, applyTheme } from './lib/markdown';
 import { markElementIndexes } from './lib/markdownIndexer';
@@ -13,6 +13,8 @@ import ThemeSelector from './components/ThemeSelector';
 import Toolbar from './components/Toolbar';
 import EditorPanel from './components/EditorPanel';
 import PreviewPanel from './components/PreviewPanel';
+import MaterialParserPage from './components/MaterialParserPage';
+import AiCreationPage from './components/AiCreationPage';
 
 export default function App() {
     const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
@@ -23,6 +25,8 @@ export default function App() {
     const [isCopying, setIsCopying] = useState(false);
     const [previewDevice, setPreviewDevice] = useState<'mobile' | 'tablet' | 'pc'>('pc');
     const [activePanel, setActivePanel] = useState<'editor' | 'preview'>('editor');
+    const [activeMenu, setActiveMenu] = useState<'material' | 'typesetter' | 'ai-creation'>('material');
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [scrollSyncEnabled, setScrollSyncEnabled] = useState(true);
     const previewRef = useRef<HTMLDivElement>(null);
     const editorScrollRef = useRef<HTMLTextAreaElement>(null);
@@ -252,91 +256,150 @@ export default function App() {
     };
 
     return (
-        <div className="flex flex-col h-screen overflow-hidden antialiased bg-[#fbfbfd] dark:bg-black transition-colors duration-300">
-
-            <Header themeMode={themeMode} onToggleTheme={toggleTheme} />
-
-            {/* 移动端 Tab 切换 */}
-            <div className="md:hidden glass-toolbar flex items-center z-[90]">
+        <div className="h-screen overflow-hidden antialiased bg-[#fbfbfd] dark:bg-black transition-colors duration-300 flex">
+            <aside
+                className={`${sidebarCollapsed ? 'w-[74px]' : 'w-[220px]'} border-r border-[#00000010] dark:border-[#ffffff10] bg-white/70 dark:bg-[#111]/70 backdrop-blur-xl transition-all duration-300 flex flex-col`}
+            >
                 <button
-                    data-testid="tab-editor"
-                    onClick={() => setActivePanel('editor')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-[13px] font-semibold transition-colors border-b-2 ${activePanel === 'editor' ? 'text-[#0066cc] dark:text-[#0a84ff] border-[#0066cc] dark:border-[#0a84ff]' : 'text-[#86868b] dark:text-[#a1a1a6] border-transparent'}`}
+                    onClick={() => setSidebarCollapsed((prev) => !prev)}
+                    className="h-[56px] px-4 flex items-center justify-between text-[#1d1d1f] dark:text-[#f5f5f7] border-b border-[#00000010] dark:border-[#ffffff10]"
+                    title={sidebarCollapsed ? '展开菜单' : '折叠菜单'}
                 >
-                    <PenLine size={15} />
-                    编辑
+                    {!sidebarCollapsed && <span className="text-sm font-semibold">工作台</span>}
+                    {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
                 </button>
-                <button
-                    data-testid="tab-preview"
-                    onClick={() => setActivePanel('preview')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-[13px] font-semibold transition-colors border-b-2 ${activePanel === 'preview' ? 'text-[#0066cc] dark:text-[#0a84ff] border-[#0066cc] dark:border-[#0a84ff]' : 'text-[#86868b] dark:text-[#a1a1a6] border-transparent'}`}
-                >
-                    <Eye size={15} />
-                    预览
-                </button>
-            </div>
+                <nav className="p-3 space-y-2">
+                    <button
+                        onClick={() => setActiveMenu('material')}
+                        className={`w-full h-10 rounded-xl px-3 flex items-center gap-2 transition-colors ${activeMenu === 'material' ? 'bg-[#0066cc]/10 text-[#0066cc] dark:bg-[#0a84ff]/15 dark:text-[#0a84ff]' : 'text-[#4a4a4a] dark:text-[#a1a1a6] hover:bg-[#00000008] dark:hover:bg-[#ffffff10]'}`}
+                        title="素材解析"
+                    >
+                        <FileSearch size={16} />
+                        {!sidebarCollapsed && <span className="text-sm font-medium">素材解析</span>}
+                    </button>
+                    <button
+                        onClick={() => setActiveMenu('typesetter')}
+                        className={`w-full h-10 rounded-xl px-3 flex items-center gap-2 transition-colors ${activeMenu === 'typesetter' ? 'bg-[#0066cc]/10 text-[#0066cc] dark:bg-[#0a84ff]/15 dark:text-[#0a84ff]' : 'text-[#4a4a4a] dark:text-[#a1a1a6] hover:bg-[#00000008] dark:hover:bg-[#ffffff10]'}`}
+                        title="排版大师"
+                    >
+                        <WandSparkles size={16} />
+                        {!sidebarCollapsed && <span className="text-sm font-medium">排版大师</span>}
+                    </button>
+                    <button
+                        onClick={() => setActiveMenu('ai-creation')}
+                        className={`w-full h-10 rounded-xl px-3 flex items-center gap-2 transition-colors ${activeMenu === 'ai-creation' ? 'bg-[#0066cc]/10 text-[#0066cc] dark:bg-[#0a84ff]/15 dark:text-[#0a84ff]' : 'text-[#4a4a4a] dark:text-[#a1a1a6] hover:bg-[#00000008] dark:hover:bg-[#ffffff10]'}`}
+                        title="AI创作"
+                    >
+                        <Sparkles size={16} />
+                        {!sidebarCollapsed && <span className="text-sm font-medium">AI创作</span>}
+                    </button>
+                </nav>
+            </aside>
 
-            {/* 排版设置 & 工具栏 (桌面端) */}
-            <div className={`glass-toolbar hidden md:grid grid-cols-1 ${gridLayoutClass()} px-0 z-[90] transition-all duration-500`}>
-                <ThemeSelector activeTheme={activeTheme} onThemeChange={setActiveTheme} />
-                <Toolbar
-                    previewDevice={previewDevice}
-                    onDeviceChange={setPreviewDevice}
-                    onExportPdf={handleExportPdf}
-                    onExportHtml={handleExportHtml}
-                    onCopy={handleCopy}
-                    copied={copied}
-                    isCopying={isCopying}
-                    scrollSyncEnabled={scrollSyncEnabled}
-                    onToggleScrollSync={() => setScrollSyncEnabled((prev) => !prev)}
-                />
-            </div>
-
-            {/* 移动端工具栏：分两行避免按钮被主题栏挤出可视区 */}
-            <div className="md:hidden glass-toolbar z-[90]">
-                <div className="overflow-x-auto no-scrollbar border-b border-[#00000010] dark:border-[#ffffff10]">
-                    <ThemeSelector activeTheme={activeTheme} onThemeChange={setActiveTheme} />
-                </div>
-                <Toolbar
-                    previewDevice={previewDevice}
-                    onDeviceChange={setPreviewDevice}
-                    onExportPdf={handleExportPdf}
-                    onExportHtml={handleExportHtml}
-                    onCopy={handleCopy}
-                    copied={copied}
-                    isCopying={isCopying}
-                    scrollSyncEnabled={scrollSyncEnabled}
-                    onToggleScrollSync={() => setScrollSyncEnabled((prev) => !prev)}
-                />
-            </div>
-
-            {/* 编辑区 & 预览区 */}
-            <main className={`flex-1 overflow-hidden grid grid-cols-1 ${gridLayoutClass()} relative transition-all duration-500`}>
-                <div className={`${activePanel === 'editor' ? 'flex' : 'hidden'} md:flex flex-col overflow-hidden`}>
-                    <EditorPanel
-                        markdownInput={markdownInput}
-                        onInputChange={setMarkdownInput}
-                        editorScrollRef={editorScrollRef}
-                        onEditorScroll={handleEditorScroll}
-                        scrollSyncEnabled={scrollSyncEnabled}
+            <div className="flex-1 min-w-0 flex flex-col">
+                {activeMenu === 'material' ? (
+                    <MaterialParserPage
+                        onSendToTypesetter={(markdown) => {
+                            setMarkdownInput(markdown);
+                            setActiveMenu('typesetter');
+                            setActivePanel('editor');
+                        }}
                     />
-                </div>
-                <div className={`${activePanel === 'preview' ? 'flex' : 'hidden'} md:flex flex-col overflow-hidden`}>
-                    <PreviewPanel
-                        renderedHtml={renderedHtml}
-                        deviceWidthClass={deviceWidthClass()}
-                        previewDevice={previewDevice}
-                        previewRef={previewRef}
-                        previewOuterScrollRef={previewOuterScrollRef}
-                        previewInnerScrollRef={previewInnerScrollRef}
-                        onPreviewOuterScroll={handlePreviewOuterScroll}
-                        onPreviewInnerScroll={handlePreviewInnerScroll}
-                        scrollSyncEnabled={scrollSyncEnabled}
-                        onImageClick={handleImageClick}
+                ) : activeMenu === 'ai-creation' ? (
+                    <AiCreationPage
+                        onSendToTypesetter={(md: string) => {
+                            setMarkdownInput(md);
+                            setActiveMenu('typesetter');
+                            setActivePanel('editor');
+                        }}
                     />
-                </div>
-            </main>
+                ) : (
+                    <>
+                        <Header themeMode={themeMode} onToggleTheme={toggleTheme} />
 
+                        {/* 移动端 Tab 切换 */}
+                        <div className="md:hidden glass-toolbar flex items-center z-[90]">
+                            <button
+                                data-testid="tab-editor"
+                                onClick={() => setActivePanel('editor')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 text-[13px] font-semibold transition-colors border-b-2 ${activePanel === 'editor' ? 'text-[#0066cc] dark:text-[#0a84ff] border-[#0066cc] dark:border-[#0a84ff]' : 'text-[#86868b] dark:text-[#a1a1a6] border-transparent'}`}
+                            >
+                                <PenLine size={15} />
+                                编辑
+                            </button>
+                            <button
+                                data-testid="tab-preview"
+                                onClick={() => setActivePanel('preview')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 text-[13px] font-semibold transition-colors border-b-2 ${activePanel === 'preview' ? 'text-[#0066cc] dark:text-[#0a84ff] border-[#0066cc] dark:border-[#0a84ff]' : 'text-[#86868b] dark:text-[#a1a1a6] border-transparent'}`}
+                            >
+                                <Eye size={15} />
+                                预览
+                            </button>
+                        </div>
+
+                        {/* 排版设置 & 工具栏 (桌面端) */}
+                        <div className={`glass-toolbar hidden md:grid grid-cols-1 ${gridLayoutClass()} px-0 z-[90] transition-all duration-500`}>
+                            <ThemeSelector activeTheme={activeTheme} onThemeChange={setActiveTheme} />
+                            <Toolbar
+                                previewDevice={previewDevice}
+                                onDeviceChange={setPreviewDevice}
+                                onExportPdf={handleExportPdf}
+                                onExportHtml={handleExportHtml}
+                                onCopy={handleCopy}
+                                copied={copied}
+                                isCopying={isCopying}
+                                scrollSyncEnabled={scrollSyncEnabled}
+                                onToggleScrollSync={() => setScrollSyncEnabled((prev) => !prev)}
+                            />
+                        </div>
+
+                        {/* 移动端工具栏：分两行避免按钮被主题栏挤出可视区 */}
+                        <div className="md:hidden glass-toolbar z-[90]">
+                            <div className="overflow-x-auto no-scrollbar border-b border-[#00000010] dark:border-[#ffffff10]">
+                                <ThemeSelector activeTheme={activeTheme} onThemeChange={setActiveTheme} />
+                            </div>
+                            <Toolbar
+                                previewDevice={previewDevice}
+                                onDeviceChange={setPreviewDevice}
+                                onExportPdf={handleExportPdf}
+                                onExportHtml={handleExportHtml}
+                                onCopy={handleCopy}
+                                copied={copied}
+                                isCopying={isCopying}
+                                scrollSyncEnabled={scrollSyncEnabled}
+                                onToggleScrollSync={() => setScrollSyncEnabled((prev) => !prev)}
+                            />
+                        </div>
+
+                        {/* 编辑区 & 预览区 */}
+                        <main className={`flex-1 overflow-hidden grid grid-cols-1 ${gridLayoutClass()} relative transition-all duration-500`}>
+                            <div className={`${activePanel === 'editor' ? 'flex' : 'hidden'} md:flex flex-col overflow-hidden`}>
+                                <EditorPanel
+                                    markdownInput={markdownInput}
+                                    onInputChange={setMarkdownInput}
+                                    editorScrollRef={editorScrollRef}
+                                    onEditorScroll={handleEditorScroll}
+                                    scrollSyncEnabled={scrollSyncEnabled}
+                                />
+                            </div>
+                            <div className={`${activePanel === 'preview' ? 'flex' : 'hidden'} md:flex flex-col overflow-hidden`}>
+                                <PreviewPanel
+                                    renderedHtml={renderedHtml}
+                                    deviceWidthClass={deviceWidthClass()}
+                                    previewDevice={previewDevice}
+                                    previewRef={previewRef}
+                                    previewOuterScrollRef={previewOuterScrollRef}
+                                    previewInnerScrollRef={previewInnerScrollRef}
+                                    onPreviewOuterScroll={handlePreviewOuterScroll}
+                                    onPreviewInnerScroll={handlePreviewInnerScroll}
+                                    scrollSyncEnabled={scrollSyncEnabled}
+                                    onImageClick={handleImageClick}
+                                />
+                            </div>
+                        </main>
+                    </>
+                )}
+            </div>
         </div>
     );
 }
