@@ -64,6 +64,38 @@ const getDouyinCookie = () => {
     return process.env.DOUYIN_COOKIE || '';
 };
 
+const trimTrailingUrlPunctuation = (url) => url.trim().replace(/[.,!?;:，。！？；：、)\]）】》]+$/u, '');
+
+const isXhsHost = (hostname) => {
+    const host = hostname.toLowerCase();
+    return host === 'xhslink.com' || host.endsWith('.xhslink.com') || host === 'xiaohongshu.com' || host.endsWith('.xiaohongshu.com');
+};
+
+const extractUrlByHost = (text, isSupportedHost) => {
+    const input = String(text ?? '').trim();
+    const urlMatches = input.matchAll(/https?:\/\/[^\s"'<>]+/gi);
+
+    for (const match of urlMatches) {
+        const candidate = trimTrailingUrlPunctuation(match[0]);
+        try {
+            if (isSupportedHost(new URL(candidate).hostname)) return candidate;
+        } catch {
+            // Ignore malformed URL-like text and keep scanning.
+        }
+    }
+
+    const bareUrlMatch = input.match(/(?:^|[\s"'<>])((?:www\.)?(?:xiaohongshu\.com|xhslink\.com)\/[^\s"'<>]+)/i);
+    if (!bareUrlMatch?.[1]) return '';
+
+    const candidate = `https://${trimTrailingUrlPunctuation(bareUrlMatch[1])}`;
+    try {
+        return isSupportedHost(new URL(candidate).hostname) ? candidate : '';
+    } catch {
+        return '';
+    }
+};
+
+const extractXhsUrl = (text) => extractUrlByHost(text, isXhsHost);
 const extractUrl = (text) => text.match(/https?:\/\/[^\s，。)）]+/)?.[0] || '';
 const toNum = (value) => {
     const number = parseInt(String(value ?? '0'), 10);
@@ -90,7 +122,9 @@ const extractXsecToken = (url) => {
 };
 
 const resolveXhsUrl = async (url) => {
-    let currentUrl = url.startsWith('http') ? url : `https://${url}`;
+    let currentUrl = extractXhsUrl(url);
+    if (!currentUrl) throw new Error('未找到有效的小红书链接');
+
     if (currentUrl.includes('xhslink.com')) {
         const headers = { ...XHS_HEADERS };
         const cookie = getXhsCookie();
@@ -408,12 +442,13 @@ const handleParse = async (req, res) => {
     const { url } = await readBody(req);
     if (!url || typeof url !== 'string') return json(res, 400, { error: '请提供分享链接' });
     const isDouyin = /v\.douyin\.com|douyin\.com|iesdouyin\.com/.test(url);
-    const isXhs = /xiaohongshu\.com|xhslink\.com/.test(url);
+    const xhsUrl = extractXhsUrl(url);
+    const isXhs = Boolean(xhsUrl);
 
     if (!isDouyin && !isXhs) return json(res, 400, { error: '暂不支持该平台，目前支持抖音、小红书' });
 
     if (isXhs) {
-        const post = await fetchXhsPost(url);
+        const post = await fetchXhsPost(xhsUrl);
         if (post.video?.url && post.type === 'video') {
             return json(res, 200, {
                 success: true,
