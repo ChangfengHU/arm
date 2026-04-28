@@ -138,9 +138,31 @@ const featureCards = [
 
 const scenarios = ['内容创作者收集选题', '电商运营拆解种草笔记', '素材库快速沉淀', '市场调研保存案例'];
 
+const trimTrailingUrlPunctuation = (url: string) => url.trim().replace(/[.,!?;:，。！？；：、)\]）】》]+$/u, '');
+
 const extractUrl = (text: string) => {
-    const match = text.match(/https?:\/\/[^\s，。)）]+/);
-    return match?.[0] ?? '';
+    const match = text.match(/https?:\/\/[^\s"'<>]+/);
+    return match ? trimTrailingUrlPunctuation(match[0]) : '';
+};
+
+const extractXhsUrl = (text: string) => {
+    const input = text.trim();
+    const matches = input.matchAll(/https?:\/\/[^\s"'<>]+/gi);
+    for (const match of matches) {
+        const candidate = trimTrailingUrlPunctuation(match[0]);
+        try {
+            const host = new URL(candidate).hostname.toLowerCase();
+            if (host === 'xhslink.com' || host.endsWith('.xhslink.com') || host === 'xiaohongshu.com' || host.endsWith('.xiaohongshu.com')) {
+                return candidate;
+            }
+        } catch {
+            // Continue scanning the next URL candidate.
+        }
+    }
+
+    const bareUrlMatch = input.match(/(?:^|[\s"'<>])((?:www\.)?(?:xiaohongshu\.com|xhslink\.com)\/[^\s"'<>]+)/i);
+    if (!bareUrlMatch?.[1]) return '';
+    return `https://${trimTrailingUrlPunctuation(bareUrlMatch[1])}`;
 };
 
 const detectPlatform = (input: string): PlatformId | null => {
@@ -221,7 +243,11 @@ export default function MaterialParserPage({ onSendToTypesetter }: MaterialParse
 
     const detectedPlatform = useMemo(() => detectPlatform(input), [input]);
     const activePlatform = platforms.find((platform) => platform.id === (detectedPlatform ?? selectedPlatform)) ?? platforms[0];
-    const sourceUrl = useMemo(() => extractUrl(input), [input]);
+    const sourceUrl = useMemo(() => {
+        const platform = detectPlatform(input);
+        if (platform === 'xiaohongshu') return extractXhsUrl(input);
+        return extractUrl(input);
+    }, [input]);
     const markdown = useMemo(() => (result ? buildMarkdown(result) : ''), [result]);
 
     const clearTimers = () => {
@@ -255,10 +281,11 @@ export default function MaterialParserPage({ onSendToTypesetter }: MaterialParse
 
         try {
             const endpoint = platform === 'tiktok' ? '/api/parse-tiktok' : '/api/parse';
+            const normalizedInput = platform === 'xiaohongshu' ? extractXhsUrl(trimmedInput) || trimmedInput : trimmedInput;
             const response = await fetch(`${parseApiBase}${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: trimmedInput }),
+                body: JSON.stringify({ url: normalizedInput }),
             });
             const data = await response.json();
 
@@ -296,6 +323,7 @@ export default function MaterialParserPage({ onSendToTypesetter }: MaterialParse
     };
 
     const displayImages = result?.images || result?.noteData?.images || [];
+    const useCompactImageGrid = displayImages.length > 0 && displayImages.length <= 4;
     const hasIndependentVideo = result?.mediaType === 'video' || result?.noteData?.type === 'video';
     const videoUrl = hasIndependentVideo ? result?.ossUrl || result?.videoUrl || result?.noteData?.video?.url || '' : '';
     const coverUrl = proxyAssetUrl(result?.coverUrl || result?.noteData?.coverUrl || displayImages[0]?.previewUrl);
@@ -600,7 +628,7 @@ export default function MaterialParserPage({ onSendToTypesetter }: MaterialParse
                                             </a>
                                         )}
                                     </div>
-                                    <div className="mt-4 grid grid-cols-4 gap-2">
+                                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                                         {[
                                             [Heart, '点赞', result.noteData.stats?.likes],
                                             [Bookmark, '收藏', result.noteData.stats?.collects],
@@ -640,7 +668,7 @@ export default function MaterialParserPage({ onSendToTypesetter }: MaterialParse
                                                 图片资源 · {displayImages.length} 张{result.liveCount ? ` · Live ${result.liveCount} 条` : ''}
                                             </h3>
                                             <p className="mt-1 text-xs text-[#64748b] dark:text-[#a1a1a6]">
-                                                固定两行横向浏览，Live 图点击后可在卡片内播放。
+                                                {useCompactImageGrid ? '少量素材自动铺满展示，Live 图点击后可在卡片内播放。' : '固定两行横向浏览，Live 图点击后可在卡片内播放。'}
                                             </p>
                                         </div>
                                         <button
@@ -650,8 +678,14 @@ export default function MaterialParserPage({ onSendToTypesetter }: MaterialParse
                                             {copied === 'images' ? '已复制' : '复制图片'}
                                         </button>
                                     </div>
-                                    <div className="mt-4 overflow-x-auto pb-2 no-scrollbar">
-                                        <div className="grid grid-flow-col grid-rows-2 gap-4 auto-cols-[180px] sm:auto-cols-[220px] lg:auto-cols-[250px]">
+                                    <div className={`mt-4 overflow-x-auto pb-2 ${useCompactImageGrid ? '' : 'no-scrollbar'}`}>
+                                        <div
+                                            className={
+                                                useCompactImageGrid
+                                                    ? 'grid min-w-[760px] grid-cols-4 gap-4'
+                                                    : 'grid grid-flow-col grid-rows-2 gap-4 auto-cols-[180px] sm:auto-cols-[220px] lg:auto-cols-[250px]'
+                                            }
+                                        >
                                         {displayImages.map((image) => (
                                             <button
                                                 key={image.index}

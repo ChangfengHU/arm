@@ -31,6 +31,7 @@ const progressSteps = ['分析主题', '撰写内容', '生成配图', '整理�
 
 const toneOptions = ['正式', '轻松', '专业', '创意'];
 const imageStyleOptions = ['摄影', '插画', '现代', '复古'];
+const generationProfileOptions = ['speed', 'balanced', 'quality'] as const;
 
 const normalizeTone = (value: string) => {
   if (value.includes('正式') || value.includes('权威')) return '正式';
@@ -206,6 +207,7 @@ export default function AiCreationPage({ onSendToTypesetter }: AiCreationPagePro
   const [sections, setSections] = useState(5);
   const [imageStyle, setImageStyle] = useState('现代');
   const [useWebSearch, setUseWebSearch] = useState(true);
+  const [generationProfile, setGenerationProfile] = useState<'speed' | 'balanced' | 'quality'>('balanced');
 
   // Job state
   const [jobId, setJobId] = useState('');
@@ -357,11 +359,54 @@ export default function AiCreationPage({ onSendToTypesetter }: AiCreationPagePro
       setSelectedPresetIndex(-1);
 
       const briefOptions = [
-        'AI 内容生产与工具应用',
-        '短视频和直播创作',
-        '个人品牌与自媒体运营',
-        '职场效率和知识管理',
-        '营销策略和增长黑客',
+        // AI 与技术领域
+        'AI Agent 如何重塑内容创作流程和工作方式',
+        'AI 视频生成工具的对标对比和应用场景',
+        'AI 文案生成如何提升社媒运营效率',
+        'Claude、ChatGPT 等大模型在实际工作中的应用技巧',
+        'AI 音视频处理工具的创意应用和最佳实践',
+
+        // 短视频与直播
+        '短视频创作的全流程优化和涨粉策略',
+        '抖音、小红书、微博平台运营的差异化策略',
+        '直播带货的选品、话术和转化提升技巧',
+        '短视频脚本创意和素材搭配的高效方法',
+        '视频剪辑软件对比和创作工作流优化',
+
+        // 个人品牌与运营
+        '自媒体矩阵运营和账号增长的系统方法论',
+        '微信公众号内容策略和粉丝变现方式',
+        '个人品牌打造和IP运营的核心要素',
+        '社交媒体内容日历规划和高效排期',
+        '粉丝互动和社区运营的增强用户粘性技巧',
+
+        // 职场与知识管理
+        '职场人士的时间管理和效率提升系统',
+        '知识管理体系搭建和个人学习成长加速法',
+        '远程工作的协作工具和团队沟通最佳实践',
+        '职场沟通技巧和跨部门协作的关键方法',
+        '员工职业发展规划和技能提升路径',
+
+        // 营销与增长
+        '营销漏斗优化和用户转化率提升策略',
+        '社群运营和粉丝经济变现的全套方法',
+        '产品launch和新品发布的营销策略',
+        '品牌故事讲述和情感连接的实战案例',
+        '数据驱动的营销决策和ROI优化',
+
+        // 生活方式与自我提升
+        '健身减肥的科学方法和日常坚持技巧',
+        '时尚穿搭和个人形象提升的实战指南',
+        '家居改造和生活品质提升的低成本方案',
+        '养生保健和健康生活方式的完整指南',
+        '亲子教育和家庭教养的现代化方法',
+
+        // 创业与商业
+        '创业融资的路径和投资人关系管理',
+        '商业模式创新和市场差异化竞争策略',
+        '创业初期的财务管理和成本控制',
+        '团队招聘和组织文化建设要点',
+        '产品市场匹配和用户反馈迭代方法',
       ];
       const randomBrief = briefOptions[Math.floor(Math.random() * briefOptions.length)];
 
@@ -403,6 +448,7 @@ export default function AiCreationPage({ onSendToTypesetter }: AiCreationPagePro
         aspect_ratio: '16:9',
         resolution: '2k',
         use_web_search: useWebSearch,
+        generation_profile: generationProfile,
       });
 
       setJobId(jid);
@@ -449,7 +495,7 @@ export default function AiCreationPage({ onSendToTypesetter }: AiCreationPagePro
             <div className="flex items-center gap-2">
               <Sparkles size={18} className="text-[#0066cc] dark:text-[#0a84ff]" />
               <h1 className="text-lg font-black text-[#0f172a] dark:text-white">AI 创作</h1>
-              <p className="ml-auto text-xs text-[#64748b] dark:text-[#a1a1a6]">输入方向，AI 自动生成完整参数和文章内容</p>
+              <p className="ml-auto hidden sm:block text-xs text-[#64748b] dark:text-[#a1a1a6]">输入方向，AI 自动生成完整参数和文章内容</p>
             </div>
           </div>
         </section>
@@ -494,6 +540,55 @@ export default function AiCreationPage({ onSendToTypesetter }: AiCreationPagePro
 
           <div className="rounded-[20px] border border-[#eef2f7] bg-white p-5 dark:border-white/10 dark:bg-[#0c0c0c]">
             <h3 className="text-sm font-bold text-[#0f172a] dark:text-white mb-4">自定义参数</h3>
+
+            {selectedPresetIndex >= 0 && presets[selectedPresetIndex] && (
+              <div className="mb-6 rounded-2xl bg-[#f8fafc] p-4 dark:bg-white/5 border border-[#e5e7eb] dark:border-white/10">
+                <p className="text-xs font-semibold text-[#64748b] dark:text-[#a1a1a6] mb-3">当前选中预设详情</p>
+
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <p className="text-xs font-semibold text-[#94a3b8] dark:text-[#64748b] mb-1">预设名称</p>
+                    <p className="text-[#0f172a] dark:text-white font-medium">{presets[selectedPresetIndex].name}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold text-[#94a3b8] dark:text-[#64748b] mb-1">受众</p>
+                    <p className="text-[#475569] dark:text-[#d1d5db]">{presets[selectedPresetIndex].audience}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold text-[#94a3b8] dark:text-[#64748b] mb-1">语气风格</p>
+                    <p className="text-[#475569] dark:text-[#d1d5db]">{presets[selectedPresetIndex].tone}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold text-[#94a3b8] dark:text-[#64748b] mb-1">配图风格</p>
+                    <p className="text-[#475569] dark:text-[#d1d5db]">{presets[selectedPresetIndex].image_style}</p>
+                  </div>
+
+                  <div className="flex gap-4 pt-2">
+                    <div>
+                      <p className="text-xs font-semibold text-[#94a3b8] dark:text-[#64748b] mb-1">段数</p>
+                      <p className="text-[#0f172a] dark:text-white font-medium">{presets[selectedPresetIndex].section_count}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-[#94a3b8] dark:text-[#64748b] mb-1">分辨率</p>
+                      <p className="text-[#0f172a] dark:text-white font-medium">{presets[selectedPresetIndex].resolution}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-[#94a3b8] dark:text-[#64748b] mb-1">宽高比</p>
+                      <p className="text-[#0f172a] dark:text-white font-medium">{presets[selectedPresetIndex].aspect_ratio}</p>
+                    </div>
+                  </div>
+
+                  {presets[selectedPresetIndex].use_web_search && (
+                    <div className="text-xs bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-1 rounded inline-block font-medium">
+                      ✓ 联网搜索已启用
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4">
               <div>
@@ -542,7 +637,7 @@ export default function AiCreationPage({ onSendToTypesetter }: AiCreationPagePro
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="block text-xs font-bold text-[#0f172a] dark:text-white mb-1.5">
                     目标受众
@@ -583,7 +678,7 @@ export default function AiCreationPage({ onSendToTypesetter }: AiCreationPagePro
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="block text-xs font-bold text-[#0f172a] dark:text-white mb-1.5">
                     段数：{sections}
@@ -615,6 +710,30 @@ export default function AiCreationPage({ onSendToTypesetter }: AiCreationPagePro
                         }`}
                       >
                         {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-bold text-[#0f172a] dark:text-white mb-1.5">
+                    生成档位
+                  </label>
+                  <div className="flex flex-wrap gap-1">
+                    {generationProfileOptions.map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setGenerationProfile(opt)}
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                          generationProfile === opt
+                            ? 'bg-[#0066cc] text-white dark:bg-[#0a84ff]'
+                            : 'bg-[#f1f5f9] text-[#64748b] hover:bg-[#e5e7eb] dark:bg-white/8 dark:text-[#d1d5db] dark:hover:bg-white/12'
+                        }`}
+                      >
+                        {opt === 'speed' ? '快速' : opt === 'balanced' ? '均衡' : '质量'}
                       </button>
                     ))}
                   </div>

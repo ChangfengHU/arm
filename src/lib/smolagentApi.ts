@@ -68,6 +68,7 @@ export interface ArticleParams {
   resolution?: string;
   use_web_search?: boolean;
   preset_index?: number;
+  generation_profile?: 'speed' | 'balanced' | 'quality';
 }
 
 export const fetchPresets = async (): Promise<Preset[]> => {

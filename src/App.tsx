@@ -258,7 +258,7 @@ export default function App() {
     return (
         <div className="h-screen overflow-hidden antialiased bg-[#fbfbfd] dark:bg-black transition-colors duration-300 flex">
             <aside
-                className={`${sidebarCollapsed ? 'w-[74px]' : 'w-[220px]'} border-r border-[#00000010] dark:border-[#ffffff10] bg-white/70 dark:bg-[#111]/70 backdrop-blur-xl transition-all duration-300 flex flex-col`}
+                className={`hidden md:flex ${sidebarCollapsed ? 'w-[74px]' : 'w-[220px]'} border-r border-[#00000010] dark:border-[#ffffff10] bg-white/70 dark:bg-[#111]/70 backdrop-blur-xl transition-all duration-300 flex-col`}
             >
                 <button
                     onClick={() => setSidebarCollapsed((prev) => !prev)}
@@ -297,6 +297,29 @@ export default function App() {
             </aside>
 
             <div className="flex-1 min-w-0 flex flex-col">
+                <div className="md:hidden border-b border-[#00000010] dark:border-[#ffffff10] bg-white/75 dark:bg-[#111]/75 backdrop-blur-xl px-2 py-2">
+                    <div className="grid grid-cols-3 gap-2">
+                        <button
+                            onClick={() => setActiveMenu('material')}
+                            className={`h-9 rounded-lg text-xs font-semibold transition-colors ${activeMenu === 'material' ? 'bg-[#0066cc]/10 text-[#0066cc] dark:bg-[#0a84ff]/15 dark:text-[#0a84ff]' : 'text-[#4a4a4a] dark:text-[#a1a1a6] bg-transparent'}`}
+                        >
+                            素材解析
+                        </button>
+                        <button
+                            onClick={() => setActiveMenu('ai-creation')}
+                            className={`h-9 rounded-lg text-xs font-semibold transition-colors ${activeMenu === 'ai-creation' ? 'bg-[#0066cc]/10 text-[#0066cc] dark:bg-[#0a84ff]/15 dark:text-[#0a84ff]' : 'text-[#4a4a4a] dark:text-[#a1a1a6] bg-transparent'}`}
+                        >
+                            AI创作
+                        </button>
+                        <button
+                            onClick={() => setActiveMenu('typesetter')}
+                            className={`h-9 rounded-lg text-xs font-semibold transition-colors ${activeMenu === 'typesetter' ? 'bg-[#0066cc]/10 text-[#0066cc] dark:bg-[#0a84ff]/15 dark:text-[#0a84ff]' : 'text-[#4a4a4a] dark:text-[#a1a1a6] bg-transparent'}`}
+                        >
+                            排版大师
+                        </button>
+                    </div>
+                </div>
+
                 {activeMenu === 'material' ? (
                     <MaterialParserPage
                         onSendToTypesetter={(markdown) => {
