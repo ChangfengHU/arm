@@ -11,3 +11,7 @@ test-results/
 *.swp
 *.swo
 *~
+.pnpm-store/
+e2e/artifacts/
+vite.config.d.ts
+vite.config.js
